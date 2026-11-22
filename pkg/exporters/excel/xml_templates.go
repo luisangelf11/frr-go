@@ -2,6 +2,7 @@ package excel
 
 import (
 	"fmt"
+	"html"
 	"strings"
 )
 
@@ -17,8 +18,8 @@ func colIndexToLetters(idx int) string {
 	return res
 }
 
-// buildContentTypesXML genera el archivo [Content_Types].xml para N hojas de cálculo.
-func buildContentTypesXML(numSheets int) string {
+// buildContentTypesXML genera el archivo [Content_Types].xml para N hojas y la tabla de strings compartidos.
+func buildContentTypesXML(numSheets int, hasSST bool) string {
 	var sb strings.Builder
 	sb.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + "\n")
 	sb.WriteString(`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` + "\n")
@@ -26,6 +27,10 @@ func buildContentTypesXML(numSheets int) string {
 	sb.WriteString(`  <Default Extension="xml" ContentType="application/xml"/>` + "\n")
 	sb.WriteString(`  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` + "\n")
 	sb.WriteString(`  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>` + "\n")
+
+	if hasSST {
+		sb.WriteString(`  <Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>` + "\n")
+	}
 
 	for i := 1; i <= numSheets; i++ {
 		sb.WriteString(fmt.Sprintf(`  <Override PartName="/xl/worksheets/sheet%d.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`+"\n", i))
@@ -43,8 +48,8 @@ func buildRelsXML() string {
 </Relationships>`
 }
 
-// buildWorkbookRelsXML genera xl/_rels/workbook.xml.rels conectando las hojas y estilos.
-func buildWorkbookRelsXML(numSheets int) string {
+// buildWorkbookRelsXML genera xl/_rels/workbook.xml.rels conectando las hojas, estilos y sharedStrings.
+func buildWorkbookRelsXML(numSheets int, hasSST bool) string {
 	var sb strings.Builder
 	sb.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + "\n")
 	sb.WriteString(`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` + "\n")
@@ -54,11 +59,14 @@ func buildWorkbookRelsXML(numSheets int) string {
 	}
 
 	sb.WriteString(fmt.Sprintf(`  <Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` + "\n"))
+	if hasSST {
+		sb.WriteString(fmt.Sprintf(`  <Relationship Id="rIdSST" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>` + "\n"))
+	}
 	sb.WriteString(`</Relationships>`)
 	return sb.String()
 }
 
-// buildWorkbookXML genera xl/workbook.xml listando los nombres de cada hoja.
+// buildWorkbookXML genera xl/workbook.xml listando los nombres de cada hoja con escape XML.
 func buildWorkbookXML(sheetNames []string) string {
 	var sb strings.Builder
 	sb.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + "\n")
@@ -79,7 +87,8 @@ func buildWorkbookXML(sheetNames []string) string {
 		if cleanName == "" {
 			cleanName = fmt.Sprintf("Hoja%d", i+1)
 		}
-		sb.WriteString(fmt.Sprintf(`    <sheet name="%s" sheetId="%d" r:id="rId%d"/>`+"\n", cleanName, i+1, i+1))
+		escapedName := html.EscapeString(cleanName)
+		sb.WriteString(fmt.Sprintf(`    <sheet name="%s" sheetId="%d" r:id="rId%d"/>`+"\n", escapedName, i+1, i+1))
 	}
 
 	sb.WriteString(`  </sheets>` + "\n")
@@ -191,4 +200,19 @@ func buildStylesXML(headerHex, altRowHex, borderHex string) string {
     </xf>
   </cellXfs>
 </styleSheet>`, headerHex, altRowHex, borderHex, borderHex, borderHex, borderHex)
+}
+
+// buildSharedStringsXML genera xl/sharedStrings.xml con todas las cadenas únicas del libro.
+func buildSharedStringsXML(stringsList []string, totalCount int) string {
+	var sb strings.Builder
+	sb.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + "\n")
+	sb.WriteString(fmt.Sprintf(`<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="%d" uniqueCount="%d">`+"\n", totalCount, len(stringsList)))
+
+	for _, s := range stringsList {
+		escaped := html.EscapeString(s)
+		sb.WriteString(fmt.Sprintf(`  <si><t xml:space="preserve">%s</t></si>`+"\n", escaped))
+	}
+
+	sb.WriteString(`</sst>`)
+	return sb.String()
 }

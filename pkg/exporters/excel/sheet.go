@@ -2,16 +2,40 @@ package excel
 
 import (
 	"fmt"
-	"html"
 	"math"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/luisangelf11/reporteria-go/pkg/reporter"
 )
 
+type sharedStringsTable struct {
+	mapping map[string]int
+	list    []string
+	total   int
+}
+
+func newSST() *sharedStringsTable {
+	return &sharedStringsTable{
+		mapping: make(map[string]int),
+		list:    make([]string, 0),
+	}
+}
+
+func (s *sharedStringsTable) add(str string) int {
+	s.total++
+	if idx, exists := s.mapping[str]; exists {
+		return idx
+	}
+	idx := len(s.list)
+	s.mapping[str] = idx
+	s.list = append(s.list, str)
+	return idx
+}
+
 // buildSheetXML construye el XML de una hoja de cálculo individual para una tabla de datos.
-func buildSheetXML(tbl *reporter.TableBlock, freezeHeader, autoWidth, zebraStriping bool) string {
+func buildSheetXML(tbl *reporter.TableBlock, sst *sharedStringsTable, freezeHeader, autoWidth, zebraStriping bool) string {
 	numCols := len(tbl.Headers)
 	if numCols == 0 && len(tbl.Rows) > 0 {
 		numCols = len(tbl.Rows[0])
@@ -36,17 +60,16 @@ func buildSheetXML(tbl *reporter.TableBlock, freezeHeader, autoWidth, zebraStrip
 		sb.WriteString(`  </sheetViews>` + "\n")
 	}
 
-	// 2. Cálculo de ancho de columnas (Auto-width)
+	// 2. Cálculo de ancho de columnas (Auto-width basado en conteo real de caracteres UTF-8)
 	colWidths := make([]float64, numCols)
 	for i := 0; i < numCols; i++ {
 		w := 12.0
 		if i < len(tbl.Headers) {
-			w = math.Max(w, float64(len(tbl.Headers[i]))+4.0)
+			w = math.Max(w, float64(utf8.RuneCountInString(tbl.Headers[i]))+4.0)
 		}
 		colWidths[i] = w
 	}
 
-	// Muestrear filas para ancho óptimo
 	sampleRows := len(tbl.Rows)
 	if sampleRows > 100 {
 		sampleRows = 100
@@ -55,9 +78,9 @@ func buildSheetXML(tbl *reporter.TableBlock, freezeHeader, autoWidth, zebraStrip
 		row := tbl.Rows[r]
 		for c := 0; c < numCols; c++ {
 			if c < len(row) {
-				l := float64(len(row[c])) + 3.0
+				l := float64(utf8.RuneCountInString(row[c])) + 3.0
 				if l > colWidths[c] {
-					colWidths[c] = math.Min(50.0, l) // máximo 50 caracteres de ancho
+					colWidths[c] = math.Min(50.0, l)
 				}
 			}
 		}
@@ -82,8 +105,8 @@ func buildSheetXML(tbl *reporter.TableBlock, freezeHeader, autoWidth, zebraStrip
 			headerText = tbl.Headers[colIdx]
 		}
 		cellRef := fmt.Sprintf("%s1", colIndexToLetters(colIdx))
-		escaped := html.EscapeString(headerText)
-		sb.WriteString(fmt.Sprintf(`      <c r="%s" s="1" t="inlineStr"><is><t>%s</t></is></c>`+"\n", cellRef, escaped))
+		strIdx := sst.add(headerText)
+		sb.WriteString(fmt.Sprintf(`      <c r="%s" s="1" t="s"><v>%d</v></c>`+"\n", cellRef, strIdx))
 	}
 	sb.WriteString(`    </row>` + "\n")
 
@@ -102,38 +125,35 @@ func buildSheetXML(tbl *reporter.TableBlock, freezeHeader, autoWidth, zebraStrip
 
 			cellRef := fmt.Sprintf("%s%d", colIndexToLetters(colIdx), rowNum)
 
-			// Determinar si es número puro
 			numVal, isNum := tryParseNumber(cellVal)
 
-			// Determinar alineación
 			align := reporter.AlignLeft
 			if colIdx < len(tbl.ColumnAlignments) {
 				align = tbl.ColumnAlignments[colIdx]
 			}
 
-			// Seleccionar estilo de celda (0..7 según styles.xml)
-			styleID := 2 // Normal texto
+			styleID := 2
 			if isZebra {
-				styleID = 3 // Zebra texto
+				styleID = 3
 			}
 
 			if isNum || align == reporter.AlignRight {
-				styleID = 4 // Normal número
+				styleID = 4
 				if isZebra {
-					styleID = 5 // Zebra número
+					styleID = 5
 				}
 			} else if align == reporter.AlignCenter {
-				styleID = 6 // Normal centro
+				styleID = 6
 				if isZebra {
-					styleID = 7 // Zebra centro
+					styleID = 7
 				}
 			}
 
 			if isNum {
 				sb.WriteString(fmt.Sprintf(`      <c r="%s" s="%d"><v>%s</v></c>`+"\n", cellRef, styleID, numVal))
 			} else {
-				escaped := html.EscapeString(cellVal)
-				sb.WriteString(fmt.Sprintf(`      <c r="%s" s="%d" t="inlineStr"><is><t>%s</t></is></c>`+"\n", cellRef, styleID, escaped))
+				strIdx := sst.add(cellVal)
+				sb.WriteString(fmt.Sprintf(`      <c r="%s" s="%d" t="s"><v>%d</v></c>`+"\n", cellRef, styleID, strIdx))
 			}
 		}
 
@@ -142,7 +162,7 @@ func buildSheetXML(tbl *reporter.TableBlock, freezeHeader, autoWidth, zebraStrip
 
 	sb.WriteString(`  </sheetData>` + "\n")
 
-	// 4. AutoFiltro en la tabla para Excel
+	// 4. AutoFiltro
 	totalRows := len(tbl.Rows) + 1
 	if totalRows > 1 && numCols > 0 {
 		lastCol := colIndexToLetters(numCols - 1)
@@ -158,7 +178,6 @@ func tryParseNumber(s string) (string, bool) {
 	if clean == "" {
 		return "", false
 	}
-	// Si contiene letras o símbolos como $, €, %, no es número puro de celda
 	if _, err := strconv.ParseInt(clean, 10, 64); err == nil {
 		return clean, true
 	}

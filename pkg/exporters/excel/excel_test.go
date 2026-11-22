@@ -66,6 +66,7 @@ func TestExcelGeneration(t *testing.T) {
 		"xl/_rels/workbook.xml.rels":   false,
 		"xl/workbook.xml":              false,
 		"xl/styles.xml":                false,
+		"xl/sharedStrings.xml":         false,
 		"xl/worksheets/sheet1.xml":     false,
 		"xl/worksheets/sheet2.xml":     false,
 	}

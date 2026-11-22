@@ -12,10 +12,11 @@ import (
 
 // Config define las opciones para la exportación a formato CSV / TSV.
 type Config struct {
-	Delimiter  rune   // Delimitador de columnas: ',' o ';' o '\t' (por defecto ',')
-	UseCRLF    bool   // Si es true, usa saltos de línea Windows (\r\n); si es false, (\n)
-	IncludeBOM bool   // Si es true, incluye el prefijo UTF-8 BOM (\xEF\xBB\xBF) para Excel
-	TableID    string // Si está definido, exporta únicamente la tabla con este ID
+	Delimiter         rune   // Delimitador de columnas: ',' o ';' o '\t' (por defecto ',')
+	UseCRLF           bool   // Si es true, usa saltos de línea Windows (\r\n); si es false, (\n)
+	IncludeBOM        bool   // Si es true, incluye el prefijo UTF-8 BOM (\xEF\xBB\xBF) para Excel
+	TableID           string // Si está definido, exporta únicamente la tabla con este ID
+	UseExcelSepHeader bool   // Si es true, incluye la directiva "sep=," para forzar a Excel a reconocer las columnas
 }
 
 // DefaultConfig retorna una configuración estándar optimizada para compatibilidad internacional.
@@ -70,6 +71,11 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 	// 1. Prefijo UTF-8 BOM si está habilitado (permite a Excel abrir caracteres como tildes y ñ sin corrupción)
 	if e.cfg.IncludeBOM {
 		buf.Write([]byte{0xEF, 0xBB, 0xBF})
+	}
+
+	// Directiva sep= para forzar a Excel en Windows a separar columnas correctamente
+	if e.cfg.UseExcelSepHeader {
+		buf.WriteString(fmt.Sprintf("sep=%c\r\n", e.cfg.Delimiter))
 	}
 
 	// 2. Extraer tablas del documento

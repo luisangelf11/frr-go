@@ -17,6 +17,8 @@ func RenderSVG(ops []DrawOp, width, height float64) string {
 
 	var sb strings.Builder
 
+	// Encabezado XML con declaración explícita de codificación UTF-8
+	sb.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 	sb.WriteString(fmt.Sprintf(
 		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %.1f %.1f" width="%.1f" height="%.1f" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">`+"\n",
 		width, height, width, height,

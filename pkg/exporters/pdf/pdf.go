@@ -68,6 +68,9 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 
 	theme := doc.Theme
 
+	// Traductor Unicode para codificación de fuentes PDF estándar (ISO-8859-1 / CP1252)
+	tr := pdf.UnicodeTranslatorFromDescriptor("")
+
 	// Configuración de Header & Footer automáticos
 	pdf.AliasNbPages("{nb}")
 
@@ -88,11 +91,11 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 			if doc.Author != "" {
 				footerLeft = fmt.Sprintf("%s • %s", doc.Title, doc.Author)
 			}
-			pdf.CellFormat(availWidth/2.0, 6, footerLeft, "", 0, "L", false, 0, "")
+			pdf.CellFormat(availWidth/2.0, 6, tr(footerLeft), "", 0, "L", false, 0, "")
 
 			// Texto derecho (Paginación)
 			pageStr := fmt.Sprintf("Página %d de {nb}", pdf.PageNo())
-			pdf.CellFormat(availWidth/2.0, 6, pageStr, "", 0, "R", false, 0, "")
+			pdf.CellFormat(availWidth/2.0, 6, tr(pageStr), "", 0, "R", false, 0, "")
 		})
 	}
 
@@ -105,10 +108,10 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 				pdf.SetTextColor(theme.MutedTextColor.R, theme.MutedTextColor.G, theme.MutedTextColor.B)
 
 				pdf.SetX(marginLeft)
-				pdf.CellFormat(availWidth/2.0, 5, doc.Title, "", 0, "L", false, 0, "")
+				pdf.CellFormat(availWidth/2.0, 5, tr(doc.Title), "", 0, "L", false, 0, "")
 
 				if doc.Date != "" {
-					pdf.CellFormat(availWidth/2.0, 5, doc.Date, "", 0, "R", false, 0, "")
+					pdf.CellFormat(availWidth/2.0, 5, tr(doc.Date), "", 0, "R", false, 0, "")
 				}
 
 				pdf.SetDrawColor(theme.BorderColor.R, theme.BorderColor.G, theme.BorderColor.B)
@@ -125,26 +128,26 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 	curY := marginTop
 
 	// 1. Portada / Banner de Título Principal en la Primera Página
-	curY = renderTitleBanner(pdf, doc, theme, marginLeft, curY, availWidth)
+	curY = renderTitleBanner(pdf, tr, doc, theme, marginLeft, curY, availWidth)
 
 	// 2. Procesar Bloques de Contenido
 	for _, blk := range doc.Blocks {
 		switch blk.Type {
 		case reporter.BlockTypeHeading:
-			curY = renderHeading(pdf, blk.Heading, theme, marginLeft, curY, availWidth, pageH, marginBottom)
+			curY = renderHeading(pdf, tr, blk.Heading, theme, marginLeft, curY, availWidth, pageH, marginBottom)
 
 		case reporter.BlockTypeParagraph:
-			curY = renderParagraph(pdf, blk.Paragraph, theme, marginLeft, curY, availWidth, pageH, marginBottom)
+			curY = renderParagraph(pdf, tr, blk.Paragraph, theme, marginLeft, curY, availWidth, pageH, marginBottom)
 
 		case reporter.BlockTypeMetricCards:
-			curY = renderMetricCards(pdf, blk.MetricCards, theme, marginLeft, curY, availWidth, pageH, marginBottom)
+			curY = renderMetricCards(pdf, tr, blk.MetricCards, theme, marginLeft, curY, availWidth, pageH, marginBottom)
 
 		case reporter.BlockTypeTable:
-			curY = renderTable(pdf, blk.Table, theme, marginLeft, curY, availWidth, pageH, marginBottom)
+			curY = renderTable(pdf, tr, blk.Table, theme, marginLeft, curY, availWidth, pageH, marginBottom)
 			curY += 6.0 // Margen inferior tras tabla
 
 		case reporter.BlockTypeChart:
-			curY = renderChartBlock(pdf, blk.Chart, marginLeft, curY, availWidth, pageH, marginBottom)
+			curY = renderChartBlock(pdf, tr, blk.Chart, marginLeft, curY, availWidth, pageH, marginBottom)
 
 		case reporter.BlockTypeDivider:
 			curY = renderDivider(pdf, theme, marginLeft, curY, availWidth, pageH, marginBottom)
@@ -168,7 +171,7 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 }
 
 // renderTitleBanner dibuja el encabezado principal en la primera página con una barra de acento.
-func renderTitleBanner(pdf *fpdf.Fpdf, doc *reporter.Document, theme reporter.Theme, startX, startY, availWidth float64) float64 {
+func renderTitleBanner(pdf *fpdf.Fpdf, tr func(string) string, doc *reporter.Document, theme reporter.Theme, startX, startY, availWidth float64) float64 {
 	curY := startY
 
 	// Barra vertical de acento corporativo
@@ -186,13 +189,13 @@ func renderTitleBanner(pdf *fpdf.Fpdf, doc *reporter.Document, theme reporter.Th
 	// Título principal
 	pdf.SetFont("Arial", "B", 18)
 	pdf.SetTextColor(theme.PrimaryColor.R, theme.PrimaryColor.G, theme.PrimaryColor.B)
-	pdf.Text(textStartX, curY+7, doc.Title)
+	pdf.Text(textStartX, curY+7, tr(doc.Title))
 
 	// Subtítulo
 	if doc.Subtitle != "" {
 		pdf.SetFont("Arial", "", 10)
 		pdf.SetTextColor(theme.MutedTextColor.R, theme.MutedTextColor.G, theme.MutedTextColor.B)
-		pdf.Text(textStartX, curY+13.5, doc.Subtitle)
+		pdf.Text(textStartX, curY+13.5, tr(doc.Subtitle))
 	}
 
 	// Metadatos (Autor y Fecha) a la derecha
@@ -202,14 +205,16 @@ func renderTitleBanner(pdf *fpdf.Fpdf, doc *reporter.Document, theme reporter.Th
 		metaY := curY + 6.0
 		if doc.Date != "" {
 			metaStr := "Fecha: " + doc.Date
-			w := pdf.GetStringWidth(metaStr)
-			pdf.Text(startX+availWidth-w, metaY, metaStr)
+			trMeta := tr(metaStr)
+			w := pdf.GetStringWidth(trMeta)
+			pdf.Text(startX+availWidth-w, metaY, trMeta)
 			metaY += 5.5
 		}
 		if doc.Author != "" {
 			metaStr := "Autor: " + doc.Author
-			w := pdf.GetStringWidth(metaStr)
-			pdf.Text(startX+availWidth-w, metaY, metaStr)
+			trMeta := tr(metaStr)
+			w := pdf.GetStringWidth(trMeta)
+			pdf.Text(startX+availWidth-w, metaY, trMeta)
 		}
 	}
 
@@ -223,7 +228,7 @@ func renderTitleBanner(pdf *fpdf.Fpdf, doc *reporter.Document, theme reporter.Th
 	return curY + 6.0
 }
 
-func renderHeading(pdf *fpdf.Fpdf, h *reporter.HeadingBlock, theme reporter.Theme, startX, curY, availW, pageH, bottomM float64) float64 {
+func renderHeading(pdf *fpdf.Fpdf, tr func(string) string, h *reporter.HeadingBlock, theme reporter.Theme, startX, curY, availW, pageH, bottomM float64) float64 {
 	fontSize := 14.0
 	spacingTop := 6.0
 	spacingBottom := 4.0
@@ -253,12 +258,12 @@ func renderHeading(pdf *fpdf.Fpdf, h *reporter.HeadingBlock, theme reporter.Them
 
 	curY += spacingTop
 	pdf.SetFont("Arial", "B", fontSize)
-	pdf.Text(startX, curY+4, h.Text)
+	pdf.Text(startX, curY+4, tr(h.Text))
 
 	return curY + spacingBottom + 4.0
 }
 
-func renderParagraph(pdf *fpdf.Fpdf, p *reporter.ParagraphBlock, theme reporter.Theme, startX, curY, availW, pageH, bottomM float64) float64 {
+func renderParagraph(pdf *fpdf.Fpdf, tr func(string) string, p *reporter.ParagraphBlock, theme reporter.Theme, startX, curY, availW, pageH, bottomM float64) float64 {
 	fontStyle := ""
 	if p.Bold {
 		fontStyle += "B"
@@ -280,7 +285,8 @@ func renderParagraph(pdf *fpdf.Fpdf, p *reporter.ParagraphBlock, theme reporter.
 	pdf.SetFont("Arial", fontStyle, fontSize)
 	lineH := fontSize * 0.45
 
-	lines := pdf.SplitLines([]byte(p.Text), availW)
+	translatedText := tr(p.Text)
+	lines := pdf.SplitLines([]byte(translatedText), availW)
 	for _, l := range lines {
 		if curY+lineH > pageH-bottomM {
 			pdf.AddPage()
@@ -302,7 +308,7 @@ func renderParagraph(pdf *fpdf.Fpdf, p *reporter.ParagraphBlock, theme reporter.
 	return curY + 3.0
 }
 
-func renderMetricCards(pdf *fpdf.Fpdf, m *reporter.MetricCardsBlock, theme reporter.Theme, startX, curY, availW, pageH, bottomM float64) float64 {
+func renderMetricCards(pdf *fpdf.Fpdf, tr func(string) string, m *reporter.MetricCardsBlock, theme reporter.Theme, startX, curY, availW, pageH, bottomM float64) float64 {
 	numCards := len(m.Cards)
 	if numCards == 0 {
 		return curY
@@ -329,12 +335,12 @@ func renderMetricCards(pdf *fpdf.Fpdf, m *reporter.MetricCardsBlock, theme repor
 		// Título de la métrica (arriba, pequeño)
 		pdf.SetFont("Arial", "B", 7.0)
 		pdf.SetTextColor(theme.MutedTextColor.R, theme.MutedTextColor.G, theme.MutedTextColor.B)
-		pdf.Text(cX+3.0, curY+5.5, card.Title)
+		pdf.Text(cX+3.0, curY+5.5, tr(card.Title))
 
 		// Valor numérico destacado
 		pdf.SetFont("Arial", "B", 13.0)
 		pdf.SetTextColor(theme.PrimaryColor.R, theme.PrimaryColor.G, theme.PrimaryColor.B)
-		pdf.Text(cX+3.0, curY+13.5, card.Value)
+		pdf.Text(cX+3.0, curY+13.5, tr(card.Value))
 
 		// Cambio / Delta (+15%)
 		if card.Change != "" {
@@ -344,22 +350,23 @@ func renderMetricCards(pdf *fpdf.Fpdf, m *reporter.MetricCardsBlock, theme repor
 			}
 			pdf.SetFont("Arial", "B", 7.5)
 			pdf.SetTextColor(badgeColor.R, badgeColor.G, badgeColor.B)
-			w := pdf.GetStringWidth(card.Change)
-			pdf.Text(cX+cardW-w-3.0, curY+13.5, card.Change)
+			trChange := tr(card.Change)
+			w := pdf.GetStringWidth(trChange)
+			pdf.Text(cX+cardW-w-3.0, curY+13.5, trChange)
 		}
 
 		// Descripción corta
 		if card.Description != "" {
 			pdf.SetFont("Arial", "", 6.5)
 			pdf.SetTextColor(theme.MutedTextColor.R, theme.MutedTextColor.G, theme.MutedTextColor.B)
-			pdf.Text(cX+3.0, curY+19.0, card.Description)
+			pdf.Text(cX+3.0, curY+19.0, tr(card.Description))
 		}
 	}
 
 	return curY + cardH + 6.0
 }
 
-func renderChartBlock(pdf *fpdf.Fpdf, ch *reporter.ChartBlock, startX, curY, availW, pageH, bottomM float64) float64 {
+func renderChartBlock(pdf *fpdf.Fpdf, tr func(string) string, ch *reporter.ChartBlock, startX, curY, availW, pageH, bottomM float64) float64 {
 	targetW := ch.Width
 	if targetW <= 0 || targetW > availW {
 		targetW = availW
@@ -380,7 +387,7 @@ func renderChartBlock(pdf *fpdf.Fpdf, ch *reporter.ChartBlock, startX, curY, ava
 
 	ops, err := charts.Generate(ch.Config)
 	if err == nil {
-		renderVectorChart(pdf, ops, ch.Config, chartX, curY, targetW, targetH)
+		renderVectorChart(pdf, tr, ops, ch.Config, chartX, curY, targetW, targetH)
 	}
 
 	return curY + targetH + 8.0

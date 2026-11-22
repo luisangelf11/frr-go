@@ -2,13 +2,14 @@ package pdf
 
 import (
 	"math"
+	"unicode/utf8"
 
 	"github.com/go-pdf/fpdf"
 	"github.com/luisangelf11/reporteria-go/pkg/reporter"
 )
 
 // renderTable renderiza una tabla con soporte de auto-wrap, anchos calculados, zebra striping y repetición de cabeceras.
-func renderTable(pdf *fpdf.Fpdf, t *reporter.TableBlock, theme reporter.Theme, startX, startY, availWidth, pageH, bottomMargin float64) float64 {
+func renderTable(pdf *fpdf.Fpdf, tr func(string) string, t *reporter.TableBlock, theme reporter.Theme, startX, startY, availWidth, pageH, bottomMargin float64) float64 {
 	numCols := len(t.Headers)
 	if numCols == 0 && len(t.Rows) > 0 {
 		numCols = len(t.Rows[0])
@@ -36,10 +37,11 @@ func renderTable(pdf *fpdf.Fpdf, t *reporter.TableBlock, theme reporter.Theme, s
 
 		curX := startX
 		for colIdx := 0; colIdx < numCols; colIdx++ {
-			headerText := ""
+			rawText := ""
 			if colIdx < len(t.Headers) {
-				headerText = t.Headers[colIdx]
+				rawText = t.Headers[colIdx]
 			}
+			headerText := tr(rawText)
 			w := colWidths[colIdx]
 
 			pdf.Rect(curX, y, w, headerH, "FD")
@@ -74,7 +76,7 @@ func renderTable(pdf *fpdf.Fpdf, t *reporter.TableBlock, theme reporter.Theme, s
 		}
 		pdf.SetFont("Arial", "B", 10.5)
 		pdf.SetTextColor(theme.PrimaryColor.R, theme.PrimaryColor.G, theme.PrimaryColor.B)
-		pdf.Text(startX, curY+4, t.Title)
+		pdf.Text(startX, curY+4, tr(t.Title))
 		curY += 7.0
 	}
 
@@ -97,10 +99,11 @@ func renderTable(pdf *fpdf.Fpdf, t *reporter.TableBlock, theme reporter.Theme, s
 		cellLines := make([][][]byte, numCols)
 
 		for colIdx := 0; colIdx < numCols; colIdx++ {
-			cellVal := ""
+			rawVal := ""
 			if colIdx < len(row) {
-				cellVal = row[colIdx]
+				rawVal = row[colIdx]
 			}
+			cellVal := tr(rawVal)
 			w := colWidths[colIdx] - (cellPadding * 2)
 			lines := pdf.SplitLines([]byte(cellVal), w)
 			if len(lines) > maxLines {
@@ -180,17 +183,16 @@ func calculateColumnWidths(pdf *fpdf.Fpdf, t *reporter.TableBlock, availWidth fl
 		}
 	}
 
-	// Auto-cálculo basado en longitud de caracteres
+	// Auto-cálculo basado en cantidad real de caracteres (runas UTF-8)
 	maxLengths := make([]float64, numCols)
 	for i := 0; i < numCols; i++ {
 		headerLen := 5.0
 		if i < len(t.Headers) {
-			headerLen = math.Max(headerLen, float64(len(t.Headers[i])))
+			headerLen = math.Max(headerLen, float64(utf8.RuneCountInString(t.Headers[i])))
 		}
 		maxLengths[i] = headerLen
 	}
 
-	// Evaluar hasta 20 filas para no ralentizar tablas masivas
 	evalRows := len(t.Rows)
 	if evalRows > 25 {
 		evalRows = 25
@@ -200,9 +202,8 @@ func calculateColumnWidths(pdf *fpdf.Fpdf, t *reporter.TableBlock, availWidth fl
 		row := t.Rows[r]
 		for c := 0; c < numCols; c++ {
 			if c < len(row) {
-				l := float64(len(row[c]))
+				l := float64(utf8.RuneCountInString(row[c]))
 				if l > maxLengths[c] {
-					// Poner límite superior para que una columna con texto largo no devore a las demás
 					maxLengths[c] = math.Min(35.0, l)
 				}
 			}
@@ -215,7 +216,7 @@ func calculateColumnWidths(pdf *fpdf.Fpdf, t *reporter.TableBlock, availWidth fl
 	}
 
 	res := make([]float64, numCols)
-	minColWidth := 16.0 // 16mm mínimo
+	minColWidth := 16.0
 	for i := 0; i < numCols; i++ {
 		calculated := (maxLengths[i] / totalLength) * availWidth
 		if calculated < minColWidth {
@@ -224,7 +225,6 @@ func calculateColumnWidths(pdf *fpdf.Fpdf, t *reporter.TableBlock, availWidth fl
 		res[i] = calculated
 	}
 
-	// Normalizar para que la suma coincida exactamente con availWidth
 	sum := 0.0
 	for _, w := range res {
 		sum += w

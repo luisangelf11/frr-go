@@ -59,7 +59,7 @@ func (e *Exporter) RenderToWriter(doc *reporter.Document, w io.Writer) error {
 	return err
 }
 
-// RenderToBytes genera el archivo .xlsx completo en memoria con cero dependencias externas.
+// RenderToBytes genera el archivo .xlsx completo en memoria con cero dependencias externas y tabla de strings compartidos.
 func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 	// 1. Extraer o sintetizar tablas a exportar
 	type sheetInfo struct {
@@ -98,7 +98,16 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 		sheetNames[i] = s.name
 	}
 
-	// 2. Empaquetar el archivo ZIP OpenXML (.xlsx)
+	// 2. Construir el contenido de las hojas y recolectar cadenas en SharedStringsTable (SST)
+	sst := newSST()
+	sheetContents := make([]string, numSheets)
+	for i, s := range sheets {
+		sheetContents[i] = buildSheetXML(s.table, sst, e.cfg.FreezeHeader, e.cfg.AutoWidth, e.cfg.ZebraStriping)
+	}
+
+	hasSST := len(sst.list) > 0
+
+	// 3. Empaquetar el archivo ZIP OpenXML (.xlsx)
 	var zipBuf bytes.Buffer
 	zw := zip.NewWriter(&zipBuf)
 
@@ -113,7 +122,7 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 	}
 
 	// [Content_Types].xml
-	if err := addFile("[Content_Types].xml", buildContentTypesXML(numSheets)); err != nil {
+	if err := addFile("[Content_Types].xml", buildContentTypesXML(numSheets, hasSST)); err != nil {
 		return nil, fmt.Errorf("error creando [Content_Types].xml: %w", err)
 	}
 
@@ -123,7 +132,7 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 	}
 
 	// xl/_rels/workbook.xml.rels
-	if err := addFile("xl/_rels/workbook.xml.rels", buildWorkbookRelsXML(numSheets)); err != nil {
+	if err := addFile("xl/_rels/workbook.xml.rels", buildWorkbookRelsXML(numSheets, hasSST)); err != nil {
 		return nil, fmt.Errorf("error creando workbook.xml.rels: %w", err)
 	}
 
@@ -139,11 +148,18 @@ func (e *Exporter) RenderToBytes(doc *reporter.Document) ([]byte, error) {
 		return nil, fmt.Errorf("error creando styles.xml: %w", err)
 	}
 
+	// xl/sharedStrings.xml (si hay cadenas)
+	if hasSST {
+		sstXML := buildSharedStringsXML(sst.list, sst.total)
+		if err := addFile("xl/sharedStrings.xml", sstXML); err != nil {
+			return nil, fmt.Errorf("error creando sharedStrings.xml: %w", err)
+		}
+	}
+
 	// xl/worksheets/sheet{1..N}.xml
-	for i, s := range sheets {
+	for i := range sheets {
 		sheetPath := fmt.Sprintf("xl/worksheets/sheet%d.xml", i+1)
-		sheetContent := buildSheetXML(s.table, e.cfg.FreezeHeader, e.cfg.AutoWidth, e.cfg.ZebraStriping)
-		if err := addFile(sheetPath, sheetContent); err != nil {
+		if err := addFile(sheetPath, sheetContents[i]); err != nil {
 			return nil, fmt.Errorf("error creando %s: %w", sheetPath, err)
 		}
 	}

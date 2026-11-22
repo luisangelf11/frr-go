@@ -49,7 +49,7 @@ func TestBarChartGeneration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error generando SVG: %v", err)
 	}
-	if !strings.HasPrefix(svgStr, "<svg") || !strings.HasSuffix(strings.TrimSpace(svgStr), "</svg>") {
+	if (!strings.HasPrefix(svgStr, "<svg") && !strings.HasPrefix(svgStr, "<?xml")) || !strings.HasSuffix(strings.TrimSpace(svgStr), "</svg>") {
 		t.Errorf("Salida SVG no válida")
 	}
 

@@ -6,7 +6,7 @@ import (
 )
 
 // renderVectorChart dibuja las operaciones vectoriales de un gráfico directamente sobre el lienzo de fpdf.
-func renderVectorChart(pdf *fpdf.Fpdf, ops []charts.DrawOp, cfg charts.Config, startX, startY, targetW, targetH float64) {
+func renderVectorChart(pdf *fpdf.Fpdf, tr func(string) string, ops []charts.DrawOp, cfg charts.Config, startX, startY, targetW, targetH float64) {
 	origW := cfg.Width
 	if origW <= 0 {
 		origW = 500
@@ -114,15 +114,16 @@ func renderVectorChart(pdf *fpdf.Fpdf, ops []charts.DrawOp, cfg charts.Config, s
 			}
 			pdf.SetFont("Arial", fontStyle, fontSize)
 
+			translatedText := tr(op.Text)
 			textX := x
-			textW := pdf.GetStringWidth(op.Text)
+			textW := pdf.GetStringWidth(translatedText)
 			if op.TextAlign == charts.AlignCenter {
 				textX = x - (textW / 2.0)
 			} else if op.TextAlign == charts.AlignRight {
 				textX = x - textW
 			}
 
-			pdf.Text(textX, y, op.Text)
+			pdf.Text(textX, y, translatedText)
 		}
 	}
 }
