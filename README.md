@@ -47,6 +47,7 @@ npm install fast-report-render
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/luisangelf11/frr-go/pkg/charts"
@@ -68,8 +69,23 @@ func main() {
 		SetValueFormat("$", "K").
 		Config()
 
-	// 2. Tabla de Datos
-	tabla := reporter.NewTable().
+	// 2. Tabla de Datos con Iteración Dinámica
+	type Transaccion struct {
+		Codigo  string
+		Cliente string
+		Region  string
+		Monto   float64
+		Estado  string
+	}
+
+	// Ejemplo de datos recuperados (ej. desde una base de datos o API)
+	datos := []Transaccion{
+		{"TRX-001", "Empresa Alpha S.A.", "Norte", 14500.00, "Pagado"},
+		{"TRX-002", "Iberia Logística S.L.", "Sur", 8250.50, "Pagado"},
+		{"TRX-003", "Nordic Systems AB", "Este", 22100.00, "Pendiente"},
+	}
+
+	tablaBuilder := reporter.NewTable().
 		SetTitle("Detalle de Facturación").
 		SetHeaders("Código", "Cliente", "Región", "Monto", "Estado").
 		SetAlignments(
@@ -78,11 +94,21 @@ func main() {
 			reporter.AlignCenter,
 			reporter.AlignRight,
 			reporter.AlignCenter,
-		).
-		AddRow("TRX-001", "Empresa Alpha S.A.", "Norte", "$14,500.00", "Pagado").
-		AddRow("TRX-002", "Iberia Logística S.L.", "Sur", "$8,250.50", "Pagado").
-		AddRow("TRX-003", "Nordic Systems AB", "Este", "$22,100.00", "Pendiente").
-		Build()
+		)
+
+	// Iteración para agregar filas dinámicamente con AddRow
+	for _, t := range datos {
+		tablaBuilder.AddRow(
+			t.Codigo,
+			t.Cliente,
+			t.Region,
+			fmt.Sprintf("$%.2f", t.Monto),
+			t.Estado,
+		)
+	}
+
+	// (Nota: también puedes usar tablaBuilder.AddRows(filas) si ya tienes un [][]string)
+	tabla := tablaBuilder.Build()
 
 	// 3. Construir Reporte con API Fluida
 	doc := reporter.New("Reporte Financiero Q1").

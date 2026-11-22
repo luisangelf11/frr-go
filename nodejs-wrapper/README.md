@@ -70,7 +70,7 @@ async function main() {
       ]
     })
 
-    // Tabla con estilos automáticos
+    // Tabla con estilos automáticos e iteración dinámica
     .addTable(
       ['Región', 'Vendedor', 'Operaciones', 'Total Facturado'],
       [
@@ -79,6 +79,7 @@ async function main() {
         ['Sur', 'Lucía Fernández', '38', '$98,500'],
         ['Este', 'Marcos Ruiz', '51', '$175,000']
       ]
+      // Tip: Si tienes un array de objetos, puedes pasar transacciones.map(t => [t.region, t.vendedor, String(t.ops), t.total])
     );
 
   // 3. Generar en el formato deseado (< 2ms)
