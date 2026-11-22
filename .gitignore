@@ -1,0 +1,26 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test and sample outputs
+output/
+*.pdf
+*.xlsx
+*.csv
+*.svg
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
