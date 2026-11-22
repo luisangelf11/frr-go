@@ -37,6 +37,7 @@ export function resolveBinaryPath(): string {
     path.resolve(__dirname, '..', 'bin'),
     path.resolve(__dirname, '..', '..', 'bin'),
     path.resolve(process.cwd(), 'bin'),
+    path.resolve(process.cwd(), 'node_modules', 'fast-report-render', 'bin'),
     path.resolve(process.cwd(), 'node_modules', 'frr-node', 'bin'),
   ];
 

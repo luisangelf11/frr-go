@@ -36,7 +36,7 @@ go get github.com/luisangelf11/frr-go
 
 ### En Node.js (TypeScript / JavaScript):
 ```bash
-npm install frr-node
+npm install fast-report-render
 ```
 
 ---
@@ -127,7 +127,7 @@ func main() {
 El SDK de Node.js provee una API fluida idéntica y se comunica en segundo plano con el proceso de Go mediante **Stdio IPC**, logrando tiempos de respuesta de **1 a 3 milisegundos**.
 
 ```typescript
-import { ReportBuilder, ChartType, HeadingLevel, Theme } from 'frr-node';
+import { ReportBuilder, ChartType, HeadingLevel, Theme } from 'fast-report-render';
 import * as fs from 'fs';
 
 async function generate() {
@@ -183,7 +183,7 @@ generate();
 
 ```typescript
 import express from 'express';
-import { ReportBuilder } from 'frr-node';
+import { ReportBuilder } from 'fast-report-render';
 
 const app = express();
 
@@ -253,7 +253,7 @@ frr-go/
 │   │   ├── excel/              # Generador OpenXML .xlsx nativo (0 deps)
 │   │   └── csv/                # Generador CSV con UTF-8 BOM (0 deps)
 │   └── spec/                   # Parser y esquema JSON compartido Go <-> Node
-├── nodejs-wrapper/             # SDK de Node.js / TypeScript (frr-node)
+├── nodejs-wrapper/             # SDK de Node.js / TypeScript (fast-report-render)
 └── examples/
     └── node-api/               # API de demostración y pruebas en vivo
 ```

@@ -1,4 +1,4 @@
-# frr-node
+# fast-report-render
 
 Ultra-fast reporting engine for Node.js powered by Go (`frr-go`).
 
@@ -7,7 +7,7 @@ Generates **PDF**, **Excel (.xlsx)**, and **CSV** with vector charts in **< 1-3 
 ## Installation
 
 ```bash
-npm install frr-node
+npm install fast-report-render
 ```
 
 The package bundles pre-compiled Go worker binaries for Windows, Linux, and macOS (x64 / arm64).
@@ -15,7 +15,7 @@ The package bundles pre-compiled Go worker binaries for Windows, Linux, and macO
 ## Quick Example
 
 ```javascript
-const { GoWorkerManager, ReportBuilder } = require('frr-node');
+const { GoWorkerManager, ReportBuilder } = require('fast-report-render');
 
 async function main() {
   const worker = new GoWorkerManager();
