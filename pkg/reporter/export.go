@@ -9,6 +9,9 @@ var GlobalPDFExporter func(doc *Document) ([]byte, error)
 // GlobalCSVExporter almacena el exportador CSV registrado.
 var GlobalCSVExporter func(doc *Document, delimiter rune, includeBOM bool) ([]byte, error)
 
+// GlobalExcelExporter almacena el exportador Excel registrado.
+var GlobalExcelExporter func(doc *Document) ([]byte, error)
+
 // RegisterPDFExporter registra la implementación del exportador PDF.
 func RegisterPDFExporter(fn func(doc *Document) ([]byte, error)) {
 	GlobalPDFExporter = fn
@@ -17,6 +20,11 @@ func RegisterPDFExporter(fn func(doc *Document) ([]byte, error)) {
 // RegisterCSVExporter registra la implementación del exportador CSV.
 func RegisterCSVExporter(fn func(doc *Document, delimiter rune, includeBOM bool) ([]byte, error)) {
 	GlobalCSVExporter = fn
+}
+
+// RegisterExcelExporter registra la implementación del exportador Excel.
+func RegisterExcelExporter(fn func(doc *Document) ([]byte, error)) {
+	GlobalExcelExporter = fn
 }
 
 // ExportPDF exporta el documento a un archivo PDF.
@@ -56,6 +64,23 @@ func (d *Document) ExportCSVBytes(delimiter ...rune) ([]byte, error) {
 	}
 	if GlobalCSVExporter != nil {
 		return GlobalCSVExporter(d, delim, true)
+	}
+	return nil, nil
+}
+
+// ExportExcel exporta las tablas del documento a un archivo .xlsx de Excel.
+func (d *Document) ExportExcel(outPath string) error {
+	b, err := d.ExportExcelBytes()
+	if err != nil {
+		return err
+	}
+	return writeToFile(outPath, b)
+}
+
+// ExportExcelBytes exporta las tablas del documento a un slice de bytes en formato .xlsx.
+func (d *Document) ExportExcelBytes() ([]byte, error) {
+	if GlobalExcelExporter != nil {
+		return GlobalExcelExporter(d)
 	}
 	return nil, nil
 }
