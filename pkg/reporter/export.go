@@ -6,9 +6,17 @@ type PDFExporterFunc func(doc *Document, outPath string) error
 // GlobalPDFExporter almacena el exportador registrado para desacoplar paquetes.
 var GlobalPDFExporter func(doc *Document) ([]byte, error)
 
+// GlobalCSVExporter almacena el exportador CSV registrado.
+var GlobalCSVExporter func(doc *Document, delimiter rune, includeBOM bool) ([]byte, error)
+
 // RegisterPDFExporter registra la implementación del exportador PDF.
 func RegisterPDFExporter(fn func(doc *Document) ([]byte, error)) {
 	GlobalPDFExporter = fn
+}
+
+// RegisterCSVExporter registra la implementación del exportador CSV.
+func RegisterCSVExporter(fn func(doc *Document, delimiter rune, includeBOM bool) ([]byte, error)) {
+	GlobalCSVExporter = fn
 }
 
 // ExportPDF exporta el documento a un archivo PDF.
@@ -27,6 +35,27 @@ func (d *Document) ExportPDF(outPath string) error {
 func (d *Document) ExportPDFBytes() ([]byte, error) {
 	if GlobalPDFExporter != nil {
 		return GlobalPDFExporter(d)
+	}
+	return nil, nil
+}
+
+// ExportCSV exporta las tablas del documento a un archivo CSV.
+func (d *Document) ExportCSV(outPath string, delimiter ...rune) error {
+	b, err := d.ExportCSVBytes(delimiter...)
+	if err != nil {
+		return err
+	}
+	return writeToFile(outPath, b)
+}
+
+// ExportCSVBytes exporta las tablas del documento a un slice de bytes en formato CSV.
+func (d *Document) ExportCSVBytes(delimiter ...rune) ([]byte, error) {
+	delim := ','
+	if len(delimiter) > 0 && delimiter[0] != 0 {
+		delim = delimiter[0]
+	}
+	if GlobalCSVExporter != nil {
+		return GlobalCSVExporter(d, delim, true)
 	}
 	return nil, nil
 }
