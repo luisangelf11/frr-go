@@ -1,0 +1,27 @@
+{
+  "name": "reporteria-node",
+  "version": "1.0.0",
+  "description": "Ultra-fast reporting engine for Node.js powered by Go (PDF, Excel, CSV, Charts)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "keywords": [
+    "reports",
+    "pdf",
+    "excel",
+    "xlsx",
+    "csv",
+    "charts",
+    "golang",
+    "worker"
+  ],
+  "author": "luisangelf11",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}
