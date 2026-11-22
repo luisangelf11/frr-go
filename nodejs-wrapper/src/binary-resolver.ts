@@ -7,7 +7,8 @@ export function resolveBinaryPath(): string {
   }
 
   const isWindows = process.platform === 'win32';
-  const binName = isWindows ? 'reporteria-cli.exe' : 'reporteria-cli';
+  const binName = isWindows ? 'frr-cli.exe' : 'frr-cli';
+  const legacyBinName = isWindows ? 'reporteria-cli.exe' : 'reporteria-cli';
 
   // Buscar en varias rutas relativas estándar
   const possiblePaths = [
@@ -15,6 +16,8 @@ export function resolveBinaryPath(): string {
     path.resolve(__dirname, '..', 'bin', binName),
     path.resolve(process.cwd(), 'bin', binName),
     path.resolve(process.cwd(), '..', 'bin', binName),
+    path.resolve(__dirname, '..', '..', 'bin', legacyBinName),
+    path.resolve(__dirname, '..', 'bin', legacyBinName),
   ];
 
   for (const p of possiblePaths) {

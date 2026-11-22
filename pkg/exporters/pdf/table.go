@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/go-pdf/fpdf"
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
 )
 
 // renderTable renderiza una tabla con soporte de auto-wrap, anchos calculados, zebra striping y repetición de cabeceras.

@@ -49,7 +49,7 @@ const server = http.createServer(async (req, res) => {
   // Endpoint de salud
   if (pathname === '/health' || pathname === '/') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ status: 'ok', engine: 'Go Stdio Worker', version: '1.0.0' }));
+    return res.end(JSON.stringify({ status: 'ok', engine: 'frr-go Stdio Worker', version: '1.0.0' }));
   }
 
   // 1. Endpoint PDF
@@ -64,6 +64,7 @@ const server = http.createServer(async (req, res) => {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'inline; filename="reporte_ventas.pdf"',
         'Content-Length': pdfBuf.length,
+        'X-Engine': 'frr-go',
         'X-Generation-Time-Ms': latency,
       });
       return res.end(pdfBuf);

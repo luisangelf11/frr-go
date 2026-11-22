@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/luisangelf11/reporteria-go/pkg/charts"
-	"github.com/luisangelf11/reporteria-go/pkg/exporters/pdf"
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
+	"github.com/luisangelf11/frr-go/pkg/charts"
+	"github.com/luisangelf11/frr-go/pkg/exporters/pdf"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
 )
 
 func buildSampleReport() *reporter.Document {

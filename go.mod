@@ -1,4 +1,4 @@
-module github.com/luisangelf11/reporteria-go
+module github.com/luisangelf11/frr-go
 
 go 1.26.4
 

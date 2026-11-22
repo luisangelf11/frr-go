@@ -1,6 +1,6 @@
 package pdf
 
-import "github.com/luisangelf11/reporteria-go/pkg/reporter"
+import "github.com/luisangelf11/frr-go/pkg/reporter"
 
 func init() {
 	exp := NewExporter()

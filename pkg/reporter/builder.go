@@ -3,7 +3,7 @@ package reporter
 import (
 	"time"
 
-	"github.com/luisangelf11/reporteria-go/pkg/charts"
+	"github.com/luisangelf11/frr-go/pkg/charts"
 )
 
 // ReportBuilder permite construir documentos mediante una API fluida y ergonómica.

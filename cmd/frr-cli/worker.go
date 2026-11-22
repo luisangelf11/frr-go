@@ -7,11 +7,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/luisangelf11/reporteria-go/pkg/exporters/csv"
-	"github.com/luisangelf11/reporteria-go/pkg/exporters/excel"
-	"github.com/luisangelf11/reporteria-go/pkg/exporters/pdf"
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
-	"github.com/luisangelf11/reporteria-go/pkg/spec"
+	"github.com/luisangelf11/frr-go/pkg/exporters/csv"
+	"github.com/luisangelf11/frr-go/pkg/exporters/excel"
+	"github.com/luisangelf11/frr-go/pkg/exporters/pdf"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
+	"github.com/luisangelf11/frr-go/pkg/spec"
 )
 
 // runWorkerLoop ejecuta el bucle de servicio persistente por Stdio IPC.

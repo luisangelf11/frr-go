@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/go-pdf/fpdf"
-	"github.com/luisangelf11/reporteria-go/pkg/charts"
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
+	"github.com/luisangelf11/frr-go/pkg/charts"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
 )
 
 // Exporter maneja la conversión de un Document en un archivo o buffer PDF.

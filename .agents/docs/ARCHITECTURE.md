@@ -1,7 +1,7 @@
-# Arquitectura General: reporteria-go
+# Arquitectura General: frr-go (Fast Report Render)
 
 ## 1. Visión del Proyecto
-`reporteria-go` es un motor de generación de reportes ultra-rápido, ergonómico y ligero, desarrollado en **Go** y diseñado para ser consumido tanto de forma nativa en **Go** como a través de un puente de alto rendimiento en **Node.js (TypeScript/JavaScript)**.
+`frr-go` (*Fast Report Render*) es un motor de generación de reportes ultra-rápido, ergonómico y ligero, desarrollado en **Go** y diseñado para ser consumido tanto de forma nativa en **Go** como a través de un puente de alto rendimiento en **Node.js (TypeScript/JavaScript)** con el paquete `frr-node`.
 
 El objetivo principal es permitir la creación fluida de reportes con:
 - Encabezados, títulos y párrafos formateados.
@@ -37,14 +37,14 @@ graph TD
         NodeApp["Aplicación Node.js (Express / Fastify / Nest)"]
     end
 
-    subgraph "Puente Node.js (reporteria-node)"
+    subgraph "Puente Node.js (frr-node)"
         TSBuilder["TypeScript Fluent Builder"]
         IPC["Worker Client (Stdio Framing)"]
         TSBuilder --> IPC
     end
 
-    subgraph "Motor Go (reporteria-go)"
-        CLI["CLI / Persistent Worker Mode"]
+    subgraph "Motor Go (frr-go)"
+        CLI["CLI / Persistent Worker Mode (frr-cli)"]
         Spec["JSON Spec Parser & Validator"]
         GoBuilder["Go Fluent API (ReportBuilder)"]
         

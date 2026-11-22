@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
 )
 
 // Config define las opciones de formato para la exportación a Excel.

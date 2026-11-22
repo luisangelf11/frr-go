@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/luisangelf11/reporteria-go/pkg/exporters/excel"
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
+	"github.com/luisangelf11/frr-go/pkg/exporters/excel"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
 )
 
 func buildSampleExcelReport() *reporter.Document {

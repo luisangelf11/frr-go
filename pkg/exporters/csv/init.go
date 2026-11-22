@@ -1,6 +1,6 @@
 package csvexp
 
-import "github.com/luisangelf11/reporteria-go/pkg/reporter"
+import "github.com/luisangelf11/frr-go/pkg/reporter"
 
 func init() {
 	reporter.RegisterCSVExporter(func(doc *reporter.Document, delimiter rune, includeBOM bool) ([]byte, error) {

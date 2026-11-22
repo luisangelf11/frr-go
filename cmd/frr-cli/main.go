@@ -21,12 +21,12 @@ func main() {
 	}
 
 	if *specPath == "" {
-		fmt.Fprintf(os.Stderr, "Uso: reporteria-cli [opciones]\n\n")
+		fmt.Fprintf(os.Stderr, "Uso: frr-cli [opciones]\n\n")
 		fmt.Fprintf(os.Stderr, "Modos de uso:\n")
 		fmt.Fprintf(os.Stderr, "  1. Modo Worker (para Node.js / servicios):\n")
-		fmt.Fprintf(os.Stderr, "     reporteria-cli --worker\n\n")
+		fmt.Fprintf(os.Stderr, "     frr-cli --worker\n\n")
 		fmt.Fprintf(os.Stderr, "  2. Modo CLI One-Shot:\n")
-		fmt.Fprintf(os.Stderr, "     reporteria-cli -format pdf -spec reporte.json -out salida.pdf\n\n")
+		fmt.Fprintf(os.Stderr, "     frr-cli -format pdf -spec reporte.json -out salida.pdf\n\n")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}

@@ -1,4 +1,4 @@
-# Roadmap de Implementación: reporteria-go
+# Roadmap de Implementación: frr-go (Fast Report Render)
 
 Este documento registra el progreso, los hitos y el estado de cada una de las fases del proyecto.
 

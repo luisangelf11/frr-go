@@ -1,6 +1,6 @@
 package reporter
 
-import "github.com/luisangelf11/reporteria-go/pkg/charts"
+import "github.com/luisangelf11/frr-go/pkg/charts"
 
 // PageSize representa el tamaño de papel físico.
 type PageSize string

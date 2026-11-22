@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	csvexp "github.com/luisangelf11/reporteria-go/pkg/exporters/csv"
-	"github.com/luisangelf11/reporteria-go/pkg/reporter"
+	csvexp "github.com/luisangelf11/frr-go/pkg/exporters/csv"
+	"github.com/luisangelf11/frr-go/pkg/reporter"
 )
 
 func buildSampleReportWithTable() *reporter.Document {

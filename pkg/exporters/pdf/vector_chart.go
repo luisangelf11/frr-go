@@ -2,7 +2,7 @@ package pdf
 
 import (
 	"github.com/go-pdf/fpdf"
-	"github.com/luisangelf11/reporteria-go/pkg/charts"
+	"github.com/luisangelf11/frr-go/pkg/charts"
 )
 
 // renderVectorChart dibuja las operaciones vectoriales de un gráfico directamente sobre el lienzo de fpdf.

@@ -1,7 +1,7 @@
 package reporter
 
 import (
-	"github.com/luisangelf11/reporteria-go/pkg/charts"
+	"github.com/luisangelf11/frr-go/pkg/charts"
 )
 
 // BlockType identifica el tipo de bloque de contenido dentro del reporte.

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/luisangelf11/reporteria-go/pkg/charts"
+	"github.com/luisangelf11/frr-go/pkg/charts"
 )
 
 func TestBarChartGeneration(t *testing.T) {

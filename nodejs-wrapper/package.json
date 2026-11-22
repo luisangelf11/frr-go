@@ -1,7 +1,7 @@
 {
-  "name": "reporteria-node",
+  "name": "frr-node",
   "version": "1.0.0",
-  "description": "Ultra-fast reporting engine for Node.js powered by Go (PDF, Excel, CSV, Charts)",
+  "description": "Ultra-fast reporting engine for Node.js powered by frr-go (PDF, Excel, CSV, Charts)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
