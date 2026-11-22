@@ -10,7 +10,7 @@ Este documento registra el progreso, los hitos y el estado de cada una de las fa
 | **04** | Motor de Excel | [04-motor-de-excel.md](../specs/04-motor-de-excel.md) | ✅ Completado | Generador OpenXML `.xlsx` streaming puro (0 deps), estilos y bandas de color |
 | **05** | Forma de llevar a Node | [05-forma-de-llevar-a-node.md](../specs/05-forma-de-llevar-a-node.md) | ✅ Completado | CLI modo `--worker` (Stdio IPC) + SDK TypeScript con Fluent Builder |
 | **06** | Pruebas en API Node | [06-pruebas-api-node.md](../specs/06-pruebas-api-node.md) | ✅ Completado | API de ejemplo (Express/Fastify) generando reportes dinámicos en 1-3ms |
-| **07** | Publicación npm y Go | [07-publicacion-npm-y-go.md](../specs/07-publicacion-npm-y-go.md) | ⏳ Pendiente | Binarios multiplataforma empaquetados en npm, release Go y documentación |
+| **07** | Publicación npm y Go | [07-publicacion-npm-y-go.md](../specs/07-publicacion-npm-y-go.md) | ✅ Completado | Binarios multiplataforma empaquetados en npm, release Go v1.0.0 y CI/CD |
 
 ---
 
