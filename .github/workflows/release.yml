@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Compile Cross-Platform Binaries
+        run: |
+          node scripts/build-binaries.js
+
+      - name: Build TypeScript Wrapper
+        working-directory: ./nodejs-wrapper
+        run: |
+          npm ci || npm install
+          npm run build
+
+      - name: Run Smoke Test
+        working-directory: ./nodejs-wrapper
+        run: |
+          node test-smoke.js
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            nodejs-wrapper/bin/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to NPM
+        if: env.NODE_AUTH_TOKEN != ''
+        working-directory: ./nodejs-wrapper
+        run: |
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

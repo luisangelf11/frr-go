@@ -1,12 +1,22 @@
 {
   "name": "frr-node",
   "version": "1.0.0",
-  "description": "Ultra-fast reporting engine for Node.js powered by frr-go (PDF, Excel, CSV, Charts)",
+  "description": "Ultra-fast reporting engine for Node.js powered by frr-go",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
-    "test": "node --test dist/**/*.test.js"
+    "test": "node test-smoke.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luisangelf11/frr-go.git",
+    "directory": "nodejs-wrapper"
   },
   "keywords": [
     "reports",
