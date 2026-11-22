@@ -16,7 +16,7 @@ import { GoWorkerManager } from './worker';
 export class ReportBuilder {
   private spec: ReportSpec;
 
-  constructor(title: string) {
+  constructor(title: string = '') {
     this.spec = {
       title,
       date: new Date().toISOString().split('T')[0],
@@ -25,6 +25,11 @@ export class ReportBuilder {
       orientation: Orientation.Portrait,
       blocks: [],
     };
+  }
+
+  public setTitle(title: string): this {
+    this.spec.title = title;
+    return this;
   }
 
   public setSubtitle(sub: string): this {
@@ -96,7 +101,22 @@ export class ReportBuilder {
     return this;
   }
 
-  public addTable(table: TableConfig): this {
+  public addKpiCard(card: MetricCard): this {
+    return this.addMetricCards(card);
+  }
+
+  public addKpi(title: string, value: string, change?: string, isPositive: boolean = true, description?: string): this {
+    return this.addMetricCards({ title, value, change, isPositive, description });
+  }
+
+  public addTable(tableOrHeaders: TableConfig | string[], maybeRows?: string[][]): this {
+    if (Array.isArray(tableOrHeaders)) {
+      return this.addTable({
+        headers: tableOrHeaders,
+        rows: maybeRows || [],
+      });
+    }
+    const table = tableOrHeaders;
     this.spec.blocks.push({
       type: 'table',
       table: {

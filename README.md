@@ -236,8 +236,22 @@ app.get('/api/reports/sales/excel', async (req, res) => {
 
 ## 📊 Benchmarks de Rendimiento
 
-Pruebas ejecutadas en un procesador Intel Core i5-11400H @ 2.70GHz:
+Pruebas ejecutadas en hardware idéntico (Intel Core i5-11400H @ 2.70GHz, Windows 11 Pro):
 
+### Comparativa vs Motores Populares (PDFKit y QuestPDF):
+*Prueba sobre 100 iteraciones consecutivas de un reporte ejecutivo A4 con 2 KPIs y tabla con estilos zebra de 25 filas.*
+
+| Motor / Biblioteca | Runtime / Ecosistema | Latencia Media | Mediana (P50) | Throughput | Peso PDF | Dependencias Runtime |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 🥇 **`frr-go` (Nativo)** | Go 1.26 (Compilado) | **0.82 ms** | **0.81 ms** | **~1,218 doc/s** | **3.5 KB** | **0** (solo `fpdf`, binario 3.6MB) |
+| 🥈 **`fast-report-render`** | Node.js (Go Worker IPC) | **0.98 ms** | **0.97 ms** | **~1,023 doc/s** | **3.5 KB** | **0** (binario pre-compilado en Go) |
+| 🥉 **`PDFKit`** | Node.js (V8 JS puro) | **6.15 ms** | **5.79 ms** | **~163 doc/s** | **3.0 KB** | Node.js stdlib |
+| 4️⃣ **`QuestPDF`** | .NET 10 (C# / SkiaSharp) | **11.99 ms** | **11.43 ms** | **~83 doc/s** | **48.3 KB** | .NET Runtime + Skia C++ DLLs |
+
+> [!TIP]
+> Consulta el informe técnico exhaustivo con gráficas y análisis de cuellos de botella en [.agents/docs/BENCHMARK_COMPARISON.md](file:///.agents/docs/BENCHMARK_COMPARISON.md).
+
+### Métricas Internas por Componente:
 | Operación | Tiempo por Reporte | Rendimiento Estimado | Dependencias Externas |
 | :--- | :--- | :--- | :--- |
 | **Gráfico de Barras Vectorial** | **0.0057 ms** (5.7 µs) | ~175,000 / seg | **0** |

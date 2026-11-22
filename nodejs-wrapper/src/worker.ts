@@ -116,6 +116,33 @@ export class GoWorkerManager {
     });
   }
 
+  public start(): Promise<void> {
+    if (!this.process || this.process.killed) {
+      this.initProcess();
+    }
+    return Promise.resolve();
+  }
+
+  public stop(): Promise<void> {
+    this.destroy();
+    return Promise.resolve();
+  }
+
+  public generatePdf(report: { toJSON?: () => ReportSpec } | ReportSpec): Promise<Buffer> {
+    const spec = typeof (report as any).toJSON === 'function' ? (report as any).toJSON() : (report as ReportSpec);
+    return this.execute(spec, 'pdf');
+  }
+
+  public generateExcel(report: { toJSON?: () => ReportSpec } | ReportSpec): Promise<Buffer> {
+    const spec = typeof (report as any).toJSON === 'function' ? (report as any).toJSON() : (report as ReportSpec);
+    return this.execute(spec, 'excel');
+  }
+
+  public generateCsv(report: { toJSON?: () => ReportSpec } | ReportSpec, delimiter: string = ','): Promise<Buffer> {
+    const spec = typeof (report as any).toJSON === 'function' ? (report as any).toJSON() : (report as ReportSpec);
+    return this.execute(spec, 'csv', delimiter);
+  }
+
   public destroy() {
     if (this.process) {
       try {
