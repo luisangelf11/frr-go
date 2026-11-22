@@ -1,6 +1,6 @@
 {
   "name": "fast-report-render",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ultra-fast reporting engine for Node.js powered by frr-go",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
