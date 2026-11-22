@@ -24,9 +24,10 @@ jobs:
           cache: true
 
       - name: Run Go Tests & Benchmarks
+        shell: bash
         run: |
-          go test -v ./...
-          go test -bench=. -benchmem ./pkg/charts
+          go test -v ./pkg/...
+          go test -bench="." -benchmem ./pkg/charts
 
   test-node:
     name: Test Node Wrapper
